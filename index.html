@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>AI angel Workflow Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #0f172a; color: #e5e7eb; }
+    h1 { color: #38bdf8; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid #1f2937; }
+    th { background: #111827; text-align: left; }
+    tr:nth-child(even) { background: #020617; }
+    .badge { padding: 3px 8px; border-radius: 12px; font-size: 12px; }
+    .status-success { background: #16a34a; color: #022c22; }
+    .status-error { background: #dc2626; color: #450a0a; }
+    .status-warning { background: #eab308; color: #422006; }
+  </style>
+</head>
+<body>
+  <h1>AI Workflow Guardian</h1>
+  <p>Recent events from your workflows.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Time</th>
+        <th>Workflow</th>
+        <th>Status</th>
+        <th>Severity</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody id="events-body">
+      <tr><td colspan="5">Loading events...</td></tr>
+    </tbody>
+  </table>
+
+  <script>
+    async function loadEvents() {
+      try {
+        const res = await fetch('/events');
+        const events = await res.json();
+
+        const tbody = document.getElementById('events-body');
+        tbody.innerHTML = '';
+
+        if (!events.length) {
+          tbody.innerHTML = '<tr><td colspan="5">No events yet.</td></tr>';
+          return;
+        }
+
+        for (const e of events) {
+          const tr = document.createElement('tr');
+
+          const statusClass =
+            e.status === 'success'
+              ? 'status-success'
+              : e.status === 'error'
+              ? 'status-error'
+              : 'status-warning';
+
+          tr.innerHTML = `
+            <td>${e.created_at}</td>
+            <td>${e.workflow}</td>
+            <td><span class="badge ${statusClass}">${e.status}</span></td>
+            <td>${e.severity || ''}</td>
+            <td>${e.message || ''}</td>
+          `;
+
+          tbody.appendChild(tr);
+        }
+      } catch (err) {
+        console.error('Error loading events:', err);
+      }
+    }
+
+    loadEvents();
+    setInterval(loadEvents, 5000);
+  </script>
+</body>
+</html>
 
